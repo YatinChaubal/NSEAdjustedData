@@ -3,7 +3,65 @@ import datetime
 import zipfile
 import os
 import csv
+import thread
+import sqlite3
+import time
+
 #from win32com.client import Dispatch
+
+class sql_stock():
+	def __init__(self,db_file="stock.db"):
+		self.db_file = db_file
+		self.conn = sqlite3.connect(db_file,check_same_thread=False)
+		self.cusror = self.conn.cursor()
+		self.thread_cnt=0
+		try:
+			self.conn.execute('''CREATE TABLE stocks
+                 (SYMBOL Text,
+                    series Text,
+                    OPEN real,
+					HIGH real,
+					LOW real,
+					CLOSE real,
+					AdjCLOSE real,
+					LAST real,
+					PREVCLOSE real,
+					Volume integer,
+					TOTTRDVAL integer,
+					TIMESTAMP date,
+					TOTALTRADES integer,
+					ISIN text
+                )''')
+		except:
+			print "Table already exsist continuing"
+
+	def insert_rec(self,symbol,sr,o,h,l,c,ac,lst,pc,vol,TOTTRDVAL, timestamp, totaltrades,isin):
+
+		sqlc = self.conn.execute("select * from stocks where timestamp='"+str(timestamp)+"' and SYMBOL='"+str(symbol)+"'")
+		sql_cnt=len(sqlc.fetchall())
+		if sql_cnt > 0:
+			print "Record already present"+str(symbol)+str(timestamp)
+		else:
+			self.conn.execute('''INSERT INTO stocks VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+			                  (symbol,sr,o,h,l,c,ac,lst,pc,vol,TOTTRDVAL, timestamp, totaltrades,isin))
+			#self.conn.commit()
+
+
+	def insert_rec_threaded(self,symbol,sr,o,h,l,c,ac,lst,pc,vol,TOTTRDVAL, timestamp, totaltrades,isin):
+		self.thread_cnt = self.thread_cnt + 1
+		conn = sqlite3.connect(self.db_file,check_same_thread=False)
+		sqlc = conn.execute("select * from stocks where timestamp='"+str(timestamp)+"' and SYMBOL='"+str(symbol)+"'")
+		sql_cnt=len(sqlc.fetchall())
+		if sql_cnt > 0:
+			print "Record already present"+str(symbol)+str(timestamp)
+		else:
+			conn.execute('''INSERT INTO stocks VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+			                  (symbol,sr,o,h,l,c,ac,lst,pc,vol,TOTTRDVAL, timestamp, totaltrades,isin))
+
+		self.thread_cnt = self.thread_cnt - 1
+	def commit(self):
+		self.conn.commit()
+
 
 
 
@@ -16,22 +74,40 @@ class NseBhavcopy:
 			'Accept-Encoding': 'none',
 			'Accept-Language': 'en-US,en;q=0.8',
 			'Connection': 'keep-alive'}
+		self.sql_stock=sql_stock("stock.db")
 
 	def converttoBhav(self,name,curdt):
 		ifile  = open(name, "rb")
 		reader = csv.reader(ifile)
 
-		f=open("bhavcop"+name,"w")
+#		f=open("bhavcop"+name,"w")
 		next(reader, None)
+
 		for row in reader:
+			self.sql_stock.insert_rec(
+						row[0],
+			            row[1],
+			            row[2],
+			            row[3],
+			            row[4],
+			            row[5],
+			            row[5],
+			            row[6],
+			            row[7],
+			            row[8],
+			            row[9],
+			            curdt,
+			            row[11],
+			            row[12]
+			            )
+		self.sql_stock.commit()
 
-
-			f.write(row[0] + "," +
-			curdt.strftime("%Y%m%d") +
-			"," + row[2] + "," + row[3] +
-			"," + row[4] + "," + row[5] +
-			"," + row[8] + "\n")
-		ifile.close()
+#			f.write(row[0] + "," +
+#			curdt.strftime("%Y%m%d") +
+#			"," + row[2] + "," + row[3] +
+#			"," + row[4] + "," + row[5] +
+#			"," + row[8] + "\n")
+#		ifile.close()
 
 	def GetBhavcopy(self,Date=datetime.date.today()):
 		curdt=Date
