@@ -6,6 +6,8 @@ import thread
 from nsedownload import NseDownload
 import threading
 import sys
+import os
+from subprocess import check_output
 
 #OPEN,HIGH,LOW,CLOSE,VOLUME
 
@@ -23,21 +25,35 @@ if __name__ == "__main__":
 
     #i=NseDownload()
 
-    yy=int(sys.argv[1])
+#    yy=int(sys.argv[1])
     #yy=2003
-    print yy
-    last_update=time.strptime(i.GetLastUpdate(yy),"%Y-%m-%d")
-    dt=datetime.date(last_update.tm_year,last_update.tm_mon,last_update.tm_mday)
-    print "Starting at "+str(dt)
+    #print yy
+ #   last_update=time.strptime(i.GetLastUpdate(yy),"%Y-%m-%d")
+ #   dt=datetime.date(last_update.tm_year,last_update.tm_mon,last_update.tm_mday)
 
-    thread_cnt=0
-    while dt <= datetime.date(yy,12,31):
 
+
+
+    dt =  datetime.date(2014,10,01)
+    while dt <= datetime.date(2014,12,31):
+        i.DownloadCSV(dt)
         fname="cm"+dt.strftime("%d%b%Y").upper()+"bhav.csv"
-
+        if os.path.isfile(fname) == False:
+            dt=dt+ datetime.timedelta(days=1)
+            continue
         print "Processing "+fname
         print datetime.datetime.now().time()
 
+
         i.CSVToDB(fname)
+        i.conn.close()
+        check_output("sqlite3.exe NSE.db < mergedb.txt",shell=True)
+        try:
+            os.rename("stocks.db",(fname+".db"))
+        except:
+            print("file Already exsist")
+
         dt=dt+ datetime.timedelta(days=1)
+        i.dbreopen()
+        #time.sleep(1)
 
