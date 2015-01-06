@@ -1,4 +1,4 @@
-from NSESQL import NSESQL
+from nsesql import NSESQL
 import datetime
 import time
 import csv
@@ -8,7 +8,7 @@ import threading
 import sys
 import os
 from subprocess import check_output
-from GrabSplit import GrabSplitSelenium
+from splitgrab import GrabSplitSelenium
 from BeautifulSoup import BeautifulSoup
 from splitadjust import SplitStock
 
@@ -51,7 +51,7 @@ def DBBulkUpdate(fname):
     i=NSESQL()
     i.CSVToDB(fname)
 
-def NSESQLmain()
+def NSESQLmain():
     i=NSESQL()
 #    i.CSVToDB("cm07JUL2004bhav.csv")
 
@@ -66,8 +66,8 @@ def NSESQLmain()
 
 
 
-    dt =  datetime.date(2014,10,01)
-    while dt <= datetime.date(2014,12,31):
+    dt =  datetime.date(2014,12,01)
+    while dt <= datetime.date(2015,01,06):
         i.DownloadCSV(dt)
         fname="cm"+dt.strftime("%d%b%Y").upper()+"bhav.csv"
         if os.path.isfile(fname) == False:
@@ -102,6 +102,6 @@ def splitmain():
 
 if __name__ == "__main__":
     NSESQLmain()
-    splitmain()
+    #splitmain()
 
 
