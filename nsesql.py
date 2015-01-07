@@ -71,15 +71,15 @@ class SQL_stock():
 
 
 class NSESQL(NseDownload,SQL_stock):
-    def __init__(self,DownloadDir="",Deletezip='y',DeleteCSV='n'):
+    def __init__(self,DownloadDir="",DeleteCSV='n'):
         SQL_stock.__init__(self)
         NseDownload.__init__(self,DownloadDir=DownloadDir,Deletezip=Deletezip)
         print self.DownloadDir
 
-    def CSVToDB(self,name=""):
+    def ProcessCSV(self):
 
         try:
-            ifile  = open(name, "rb")
+            ifile  = open(self.csvname, "rb")
         except:
             return 0
         reader = csv.reader(ifile)
@@ -141,10 +141,10 @@ class NSESQL(NseDownload,SQL_stock):
                         isin
                         )
         self.commit()
-    def DownloadToDB(self,Date):
-        csvfileloc = str(self.DownloadCSV(Date=Date))
-        if len(csvfileloc) != 0 :
-            self.CSVToDB(csvfileloc)
+
+    def UpdateForDate(self,Date):
+        self.DownloadCSV(Date=Date)
+
 
 
 
