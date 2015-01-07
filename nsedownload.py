@@ -9,10 +9,6 @@ import time
 #from win32com.client import Dispatch
 
 
-
-
-
-
 class NseDownload:
     def __init__(self,DownloadDir="",Deletezip='y'):
 
