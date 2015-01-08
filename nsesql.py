@@ -4,9 +4,10 @@ import sqlite3
 import csv
 import datetime
 import MySQLdb
+import sqlite3
 
 
-class SQL_stock():
+class MYSQLSQL_stock():
     def __init__(self):
 
         try:
@@ -69,17 +70,99 @@ class SQL_stock():
     def commit(self):
         self.conn.commit()
 
+class SQLLITE3SQL_stock():
+    def __init__(self,dbname):
 
-class NSESQL(NseDownload,SQL_stock):
-    def __init__(self,DownloadDir="",DeleteCSV='n'):
-        SQL_stock.__init__(self)
+        try:
+            self.dbname = dbname
+            self.conn = sqlite3.connect(self.dbname)
+            self.cursor = self.conn.cursor()
+        except:
+            self.conn = MySQLdb.connect(host="localhost",user="StockDBAdmin",passwd="StockDBAdmin$123")
+            self.cursor = self.conn.cursor()
+            self.cursor.execute('CREATE DATABASE NSE')
+            self.cursor = self.conn.cursor()
+            self.conn.close()
+            self.conn = MySQLdb.connect(host="localhost",user="StockDBAdmin",passwd="StockDBAdmin$123",db="NSE")
+            self.cursor = self.conn.cursor()
+
+
+
+        try:
+            self.cursor.execute('''CREATE TABLE stocks
+                 (SYMBOL Text,
+                    series Text,
+                    OPEN real,
+                    HIGH real,
+                    LOW real,
+                    CLOSE real,
+                    AdjCLOSE real,
+                    LAST real,
+                    PREVCLOSE real,
+                    Volume integer,
+                    TOTTRDVAL real,
+                    TIMESTAMP date,
+                    TOTALTRADES integer,
+                    ISIN text
+                )''')
+        except:
+            print "Table already exsist continuing"
+
+    def __del__(self):
+        self.conn.close()
+
+    def dbreopen(self):
+        self.conn = sqlite3.connect(self.dbname)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute('''CREATE TABLE stocks
+                 (SYMBOL Text,
+                    series Text,
+                    OPEN real,
+                    HIGH real,
+                    LOW real,
+                    CLOSE real,
+                    AdjCLOSE real,
+                    LAST real,
+                    PREVCLOSE real,
+                    Volume integer,
+                    TOTTRDVAL real,
+                    TIMESTAMP date,
+                    TOTALTRADES integer,
+                    ISIN text
+                )''')
+
+
+    def insert_rec(self,symbol,sr,o,h,l,c,ac,lst,pc,vol,TOTTRDVAL, timestamp, totaltrades,isin):
+
+        self.cursor.execute("select count(*) from stocks where timestamp='"+str(timestamp)+
+                                 "' and SYMBOL='"+str(symbol)+"' and series ='"+str(sr)+"'")
+
+        if self.cursor.fetchone()[0] == 0:
+
+            self.conn.execute('''INSERT INTO stocks VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+                 (symbol,sr,o,h,l,c,ac,lst,pc,vol,TOTTRDVAL, timestamp, totaltrades,isin))
+
+    def GetLastUpdate(self,year):
+        self.cursor.execute("select max(timestamp) from stocks where date(timestamp) < '"+str(year)+"-12-31 00:00:00'")
+        return str(self.cursor.fetchone()[0])
+
+
+
+
+    def commit(self):
+        self.conn.commit()
+
+
+class NSESQL(NseDownload,SQLLITE3SQL_stock):
+    def __init__(self,DownloadDir="",Deletezip='y',DeleteCSV='n'):
+        SQLLITE3SQL_stock.__init__(self,"stocks.db")
         NseDownload.__init__(self,DownloadDir=DownloadDir,Deletezip=Deletezip)
         print self.DownloadDir
 
-    def ProcessCSV(self):
+    def CSVToDB(self,name=""):
 
         try:
-            ifile  = open(self.csvname, "rb")
+            ifile  = open(name, "rb")
         except:
             return 0
         reader = csv.reader(ifile)
@@ -141,10 +224,10 @@ class NSESQL(NseDownload,SQL_stock):
                         isin
                         )
         self.commit()
-
-    def UpdateForDate(self,Date):
-        self.DownloadCSV(Date=Date)
-
+    def DownloadToDB(self,Date):
+        csvfileloc = str(self.DownloadCSV(Date=Date))
+        if len(csvfileloc) != 0 :
+            self.CSVToDB(csvfileloc)
 
 
 
