@@ -5,6 +5,7 @@ import csv
 import datetime
 import MySQLdb
 import sqlite3
+import os
 
 
 class MYSQLSQL_stock():
@@ -224,6 +225,8 @@ class NSESQL(NseDownload,SQLLITE3SQL_stock):
                         isin
                         )
         self.commit()
+        ifile.close()
+        os.remove(name)
     def DownloadToDB(self,Date):
         csvfileloc = str(self.DownloadCSV(Date=Date))
         if len(csvfileloc) != 0 :
