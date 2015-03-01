@@ -102,6 +102,7 @@ def splitmain():
 
 if __name__ == "__main__":
     NSESQLmain()
+    
     #splitmain()
 
 

@@ -156,7 +156,7 @@ class SQLLITE3SQL_stock():
 class NSESQL(NseDownload,SQLLITE3SQL_stock):
     def __init__(self,DownloadDir="",Deletezip='y',DeleteCSV='n'):
         SQLLITE3SQL_stock.__init__(self,"stocks.db")
-        NseDownload.__init__(self,DownloadDir=DownloadDir,Deletezip=Deletezip)
+        NseDownload.__init__(self,DownloadDir=DownloadDir)
         print self.DownloadDir
 
     def CSVToDB(self,name=""):
