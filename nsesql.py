@@ -147,6 +147,14 @@ class SQLLITE3SQL_stock():
         self.cursor.execute("select max(timestamp) from stocks where date(timestamp) < '"+str(year)+"-12-31 00:00:00'")
         return str(self.cursor.fetchone()[0])
 
+    def Checkdt(self,date):
+        sdate=""
+        sdate= date.strftime("%Y-%m-%d")
+        query="select count(*) from stocks where timestamp = '"+sdate +" 00:00:00'"
+        print query
+        self.cursor.execute(query)
+        return str(self.cursor.fetchone()[0])
+
 
 
 

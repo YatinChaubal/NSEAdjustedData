@@ -80,6 +80,6 @@ class NseDownload:
 
             self.ProcessCSV()
 
-        return self.csvname
+            return self.csvname
     def ProcessCSV(self):
         return

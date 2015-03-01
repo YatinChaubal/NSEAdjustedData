@@ -1,4 +1,5 @@
 from nsesql import NSESQL
+from nsesql import SQLLITE3SQL_stock
 import datetime
 import time
 import csv
@@ -51,7 +52,17 @@ def DBBulkUpdate(fname):
     i=NSESQL()
     i.CSVToDB(fname)
 
+def NSEdtcheck(filedb,dt):
+    nsedb = SQLLITE3SQL_stock(filedb)
+
+    reccount = int(nsedb.Checkdt(dt))
+    print reccount
+    return reccount
+
+
+
 def NSESQLmain():
+
     i=NSESQL()
 #    i.CSVToDB("cm07JUL2004bhav.csv")
 
@@ -67,7 +78,12 @@ def NSESQLmain():
 
 
     dt =  datetime.date(2014,12,01)
-    while dt <= datetime.date(2015,01,04):
+
+    while dt <= datetime.date(2015,01,15):
+        if NSEdtcheck("NSE.db",dt) > 0:
+            print "record already exsist"
+            dt=dt+ datetime.timedelta(days=1)
+            continue;
         i.DownloadCSV(dt)
         fname="cm"+dt.strftime("%d%b%Y").upper()+"bhav.csv"
         if os.path.isfile(fname) == False:
