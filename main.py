@@ -67,7 +67,7 @@ def NSESQLmain():
 
 
     dt =  datetime.date(2014,12,01)
-    while dt <= datetime.date(2015,01,06):
+    while dt <= datetime.date(2015,01,04):
         i.DownloadCSV(dt)
         fname="cm"+dt.strftime("%d%b%Y").upper()+"bhav.csv"
         if os.path.isfile(fname) == False:
@@ -79,7 +79,7 @@ def NSESQLmain():
 
         i.CSVToDB(fname)
         i.conn.close()
-        check_output("sqlite3.exe NSE.db < mergedb.txt",shell=True)
+        check_output("c:\\sqllite\\sqlite3.exe NSE.db < mergedb.txt",shell=True)
         try:
             os.rename("stocks.db",(fname+".db"))
         except:
@@ -102,7 +102,7 @@ def splitmain():
 
 if __name__ == "__main__":
     NSESQLmain()
-    
+
     #splitmain()
 
 
